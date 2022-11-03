@@ -22,19 +22,15 @@ public class EditorControlPanel extends SquareGameObject implements MouseMotionL
         for (Tile.Type t : Tile.Type.values()) {
             addButton(new TileSelectorButton(0, 0, 0, 0, t, this::onPress));
         }
-        addButtonToBottom(new BaseButton(0,0,0,50, Color.RED, Color.BLACK, "Save", this::save));
     }
 
     private void onPress(TileSelectorButton button) {
         this.selectedType = button.getType();
     }
-    private void save(BaseButton b){
-        String name = JOptionPane.showInputDialog("insert name of the map:");
-    }
 
     @Override
     public void draw(Graphics g) {
-        g.setColor(Color.GREEN);
+        g.setColor(Color.DARK_GRAY);
         fillRect(g);
         for (BaseButton b : this.buttons) {
             b.draw(g);
@@ -65,11 +61,11 @@ public class EditorControlPanel extends SquareGameObject implements MouseMotionL
     /**
      * @param b the button must contain the height the button should have later on
      */
-    protected void addButtonToBottom(BaseButton b) {
+    public void addButtonToBottom(BaseButton b) {
         double height = b.getHeight();
         double y = this.getY() + this.getHeight() - height;
-        for (int i = this.buttons.size() - 1; i >= 0; i++) {
-            if (b.getY() == y || b.isInside(10, (int) y)) {
+        for (int i = this.buttons.size() - 1; i >= 0; i--) {
+            if (this.buttons.get(i).getY() == y || this.buttons.get(i).isInside(10, (int) y)) {
                 y -= b.getHeight();
             }
         }

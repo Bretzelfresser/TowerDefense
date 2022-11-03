@@ -1,13 +1,18 @@
 package code.map;
 
 import code.core.Game;
+import code.helper.Path;
 import code.helper.SquareGameObject;
+import code.helper.Vec2;
 
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Stack;
 import java.util.function.Consumer;
 
 public class TileMap extends SquareGameObject implements MouseMotionListener {
@@ -15,7 +20,8 @@ public class TileMap extends SquareGameObject implements MouseMotionListener {
     public static final int BASE_WIDTH = 20;
     private Tile[][] map;
     private int tileSize;
-    private Tile spawnTile;
+    private Point spawnTile;
+    private Path path;
 
     public TileMap(int x, int y, Tile.Type[][] map, int tileSize) {
         super(x, y, 0, 0);
@@ -26,7 +32,7 @@ public class TileMap extends SquareGameObject implements MouseMotionListener {
                 if (map[col][row] == Tile.Type.SPAWN_TILE) {
                     if (spawnTile != null)
                         throw new IllegalArgumentException("this map contains more then 1 spawn Tile, this isnt supported currently");
-                    this.spawnTile = this.map[col][row];
+                    this.spawnTile = new Point(row, col);
                 }
             }
         }
@@ -59,6 +65,56 @@ public class TileMap extends SquareGameObject implements MouseMotionListener {
                 map[col][row].draw(g);
             }
         }
+    }
+
+    public Path getOrCalculatePath() {
+        if (path != null)
+            return path;
+        Path.Builder builder = Path.builder();
+        Point current = this.spawnTile;
+        Vec2 direction = new Vec2(0,0);
+        Point temp = new Point(this.spawnTile.x, spawnTile.y);
+        while (checkBounds(temp.y, temp.x)){
+
+        }
+
+
+        return null;
+    }
+
+    public boolean canFindPath() {
+        Point endTile = findEndTile(this.spawnTile);
+        return endTile != null;
+    }
+
+    private Point findEndTile(Point startTile) {
+        Stack<Point> stack = new Stack<>();
+        List<Point> finished = new ArrayList<>(this.getColumns() * getRows());
+        stack.push(startTile);
+        while (!stack.isEmpty()) {
+            Point currentTile = stack.pop();
+            if (currentTile.y == getColumns() - 1 || currentTile.x == getRows() - 1) {
+                return currentTile;
+            }
+            Point p = new Point(currentTile.x + 1, currentTile.y);
+            if (checkBounds(p.y, p.x) && this.map[p.y][p.x].getType().canWalk() && !finished.contains(p))
+                stack.add(p);
+            p = new Point(currentTile.x - 1, currentTile.y);
+            if (checkBounds(p.y, p.x) && this.map[p.y][p.x].getType().canWalk() && !finished.contains(p))
+                stack.add(p);
+            p = new Point(currentTile.x, currentTile.y + 1);
+            if (checkBounds(p.y, p.x) && this.map[p.y][p.x].getType().canWalk() && !finished.contains(p))
+                stack.add(p);
+            p = new Point(currentTile.x, currentTile.y - 1);
+            if (checkBounds(p.y, p.x) && this.map[p.y][p.x].getType().canWalk() && !finished.contains(p))
+                stack.add(p);
+
+        }
+        return null;
+    }
+
+    public boolean checkBounds(int col, int row) {
+        return col < this.getColumns() && row < this.getRows();
     }
 
     public Tile getTile(int x, int y) {
@@ -161,6 +217,6 @@ public class TileMap extends SquareGameObject implements MouseMotionListener {
     }
 
     public Tile getSpawnTile() {
-        return spawnTile;
+        return this.map[this.spawnTile.y][this.spawnTile.y];
     }
 }

@@ -20,7 +20,7 @@ public class Game extends AbstractGameState implements KeyListener {
     public Game() {
         this.setPreferredSize(new Dimension(BASE_WIDTH, BASE_HEIGHT));
         setBackground(Color.RED);
-        this.map = new TileMap(0,0, tileSize);
+        this.map = new TileMap(0,0, FileHelper.serialize("level1"), tileSize);
         addMouseMotionListener(this.map);
         setName("Game");
 
@@ -44,13 +44,6 @@ public class Game extends AbstractGameState implements KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_W) {
-            FileHelper.deserialize("firstMap", getMap().getData());
-        }
-        if (e.getKeyCode() == KeyEvent.VK_Q) {
-           this.map.updateTiles(FileHelper.serialize("firstMap2"));
-           repaint();
-        }
     }
 
     @Override

@@ -2,9 +2,13 @@ package code.map;
 
 import code.core.TowerDefense;
 import code.helper.AbstractGameState;
+import code.helper.BaseButton;
+import code.helper.FileHelper;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 
 public class Editor extends AbstractGameState implements MouseMotionListener, MouseListener, KeyListener, MouseWheelListener {
 
@@ -13,9 +17,9 @@ public class Editor extends AbstractGameState implements MouseMotionListener, Mo
     private TileMap map;
     private EditorControlPanel panel;
 
-    public Editor(){
+    public Editor() {
         setPreferredSize(new Dimension(TowerDefense.BASE_WIDTH, TowerDefense.BASE_HEIGHT));
-        map = new TileMap(0,0, tileSize);
+        map = new TileMap(0, 0, tileSize);
         panel = new EditorControlPanel(map.getWidth(), 0, TowerDefense.BASE_WIDTH - map.getWidth(), TowerDefense.BASE_HEIGHT);
         setName("Editor");
         addMouseMotionListener(this.map);
@@ -28,6 +32,8 @@ public class Editor extends AbstractGameState implements MouseMotionListener, Mo
         MouseDragger d = new MouseDragger();
         addMouseListener(d);
         addMouseMotionListener(d);
+        panel.addButtonToBottom(new BaseButton(0, 0, 0, 50, Color.RED, Color.BLACK, "Save", this::save));
+        panel.addButtonToBottom(new BaseButton(0, 0, 0, 50, Color.RED, Color.BLACK, "Load", this::load));
     }
 
     @Override
@@ -35,6 +41,19 @@ public class Editor extends AbstractGameState implements MouseMotionListener, Mo
         super.paintComponent(g);
         map.draw(g);
         panel.draw(g);
+    }
+
+    private void save(BaseButton b) {
+        String name = JOptionPane.showInputDialog("insert name of the map:");
+        if (name != null && name.length() > 0)
+            FileHelper.deserialize(name, this.map.getData());
+    }
+
+    private void load(BaseButton b) {
+        String name = JOptionPane.showInputDialog("insert name of the map:");
+        if (name != null && name.length() > 0) {
+            this.map.updateTiles(FileHelper.serialize(name));
+        }
     }
 
     @Override
@@ -48,7 +67,8 @@ public class Editor extends AbstractGameState implements MouseMotionListener, Mo
     }
 
     @Override
-    public void keyTyped(KeyEvent e) {}
+    public void keyTyped(KeyEvent e) {
+    }
 
     @Override
     public void keyPressed(KeyEvent e) {
@@ -62,7 +82,7 @@ public class Editor extends AbstractGameState implements MouseMotionListener, Mo
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        if(this.map.isInside(e.getX(), e.getY())){
+        if (this.map.isInside(e.getX(), e.getY())) {
             this.map.getTile(e.getX(), e.getY()).setType(this.panel.getSelectedType());
         }
     }
@@ -120,7 +140,7 @@ public class Editor extends AbstractGameState implements MouseMotionListener, Mo
                     map.forAll(t -> t.setHovered(false));
                 }
                 super.mouseReleased(e);
-            }else {
+            } else {
                 map.forAll(t -> t.setHovered(false));
             }
         }
@@ -137,7 +157,7 @@ public class Editor extends AbstractGameState implements MouseMotionListener, Mo
             if (map.isInside(e.getX(), e.getY())) {
                 map.forAll(t -> t.setHovered(false));
                 map.doInArea(start, map.getChunkCoordinates(e.getX(), e.getY()), t -> t.setHovered(true));
-            }else {
+            } else {
                 map.forAll(t -> t.setHovered(false));
             }
         }

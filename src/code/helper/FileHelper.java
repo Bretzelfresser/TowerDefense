@@ -42,6 +42,7 @@ public class FileHelper {
                 return map.toArray(new Tile.Type[0][0]);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
+                JOptionPane.showInternalConfirmDialog(null, "missing file in: " + file.getPath());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -77,7 +78,7 @@ public class FileHelper {
         for (int col = 0; col < map.length; col++) {
             String line = "";
             for (int row = 0; row < map[0].length; row++) {
-                line += map[row][col].getType().ordinal();
+                line += map[col][row].getType().ordinal();
             }
             writer.write(line);
             writer.newLine();
