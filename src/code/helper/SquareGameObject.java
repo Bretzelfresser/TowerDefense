@@ -51,6 +51,13 @@ public abstract class SquareGameObject implements DrawableObject {
         updateBounds();
     }
 
+    /**
+     * note that this will return a Vector 2d which contains the point coordinates
+     */
+    public Vec2 getMiddle(){
+        return new Vec2(x + this.width / 2d, this.y + this.height / 2d);
+    }
+
     public double getY() {
         return y;
     }

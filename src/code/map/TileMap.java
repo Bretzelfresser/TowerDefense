@@ -1,6 +1,7 @@
 package code.map;
 
 import code.core.Game;
+import code.helper.Direction;
 import code.helper.Path;
 import code.helper.SquareGameObject;
 import code.helper.Vec2;
@@ -70,16 +71,52 @@ public class TileMap extends SquareGameObject implements MouseMotionListener {
     public Path getOrCalculatePath() {
         if (path != null)
             return path;
+        if (!canFindPath()){
+            throw new IllegalStateException("there is no Possible path in this map");
+        }
         Path.Builder builder = Path.builder();
-        Point current = this.spawnTile;
-        Vec2 direction = new Vec2(0,0);
+        Vec2 direction = findDirection(this.spawnTile, new Vec2(0, 0));
         Point temp = new Point(this.spawnTile.x, spawnTile.y);
-        while (checkBounds(temp.y, temp.x)){
-
+        while (checkBounds(temp.y, temp.x)) {
+            direction = toTheEnd(direction, temp);
+            builder.addWaypoint(new Point(temp.x, temp.y), direction.copy());
         }
 
+        this.path = builder.build();
+        return this.path;
+    }
 
-        return null;
+    /**
+     * walks from the given point in the direction until it cant
+     */
+    protected Vec2 toTheEnd(Vec2 direction, Point startTile) {
+        Point tmp = new Point(startTile.x, startTile.y);
+        while (true) {
+            Vec2 tmpDirection = findDirection(tmp, direction);
+            if (!tmpDirection.equals(direction))
+                return tmpDirection;
+            if (!checkBounds(tmp.x, tmp.y))
+                return new Vec2(5, 0);
+            tmp = direction.apply(tmp);
+        }
+    }
+
+    protected Vec2 findDirection(Point startTile, Vec2 comeFrom) {
+        List<Vec2> directions = new ArrayList<>();
+        for (Direction d : Direction.values()) {
+            Vec2 direction = d.getDirection();
+            if (!direction.equals(comeFrom)) {
+                Point p = direction.apply(startTile);
+                if (checkBounds(p.x, p.y) && this.map[p.y][p.x].getType().canWalk())
+                    directions.add(direction);
+            }
+        }
+        if (directions.size() > 1)
+            throw new IllegalStateException("found more then 1 Way from Point" + startTile.toString());
+        if (directions.size() == 0) {
+            throw new IllegalStateException("there was no was from Point" + startTile.toString());
+        }
+        return directions.get(0);
     }
 
     public boolean canFindPath() {
@@ -93,7 +130,7 @@ public class TileMap extends SquareGameObject implements MouseMotionListener {
         stack.push(startTile);
         while (!stack.isEmpty()) {
             Point currentTile = stack.pop();
-            if (currentTile.y == getColumns() - 1 || currentTile.x == getRows() - 1) {
+            if (!startTile.equals(currentTile) && (currentTile.y == getColumns() - 1 || currentTile.x == getRows() - 1)) {
                 return currentTile;
             }
             Point p = new Point(currentTile.x + 1, currentTile.y);
